@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  linux:
+    name: Active Directory (Samba AD), Linux health check, inventory
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Samba AD tools
+        run: |
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y samba samba-ad-dc winbind ldap-utils shellcheck
+      - name: ShellCheck
+        run: shellcheck -S warning ad/*.sh linux/*.sh
+      - name: Tests (a test domain is created for the Active Directory tests)
+        run: |
+          python3 -m pip install --break-system-packages pytest
+          SAMBA_TOOL="sudo samba-tool" python3 -m pytest -v
+
+  windows:
+    name: Windows health check (PowerShell)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run health check and check its report
+        shell: powershell
+        run: .\tests\windows-health.test.ps1

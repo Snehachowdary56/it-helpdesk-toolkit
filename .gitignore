@@ -1,0 +1,5 @@
+logs/
+__pycache__/
+.pytest_cache/
+inventory/equipment.csv
+inventory/history.csv

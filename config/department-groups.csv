@@ -1,0 +1,5 @@
+department,groups
+Finance,GG-Finance;GG-Finance-Share;GG-VPN-Users
+Sales,GG-Sales;GG-CRM-Users;GG-VPN-Users
+IT,GG-IT;GG-Helpdesk;GG-VPN-Users;GG-Server-Read
+HR,GG-HR;GG-HR-Confidential
