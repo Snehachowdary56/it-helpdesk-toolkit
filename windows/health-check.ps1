@@ -22,9 +22,14 @@ foreach ($name in $CriticalServices) {
   elseif ($svc.Status -ne "Running") { Add-Finding "CRIT" "service" "$name is $($svc.Status) (Start-Service $name)" }
   else { Add-Finding "OK" "service" "$name is running" }
 }
-$stopped = Get-CimInstance Win32_Service -Filter "StartMode='Auto' AND State<>'Running'" -ErrorAction SilentlyContinue |
-  Where-Object { $_.Name -notmatch "gupdate|edgeupdate|sppsvc|RemoteRegistry|MapsBroker|tiledata" }
-Add-Finding ($(if ($stopped.Count -gt 0) { "WARN" } else { "OK" })) "service" "$($stopped.Count) automatic service(s) stopped: $(($stopped | Select-Object -First 5 -ExpandProperty Name) -join ', ')"
+# @( ) makes this a list even when only one service matches; Windows PowerShell 5.1 has no .Count on a single object
+$stopped = @(Get-CimInstance Win32_Service -Filter "StartMode='Auto' AND State<>'Running'" -ErrorAction SilentlyContinue |
+  Where-Object { $_.Name -notmatch "gupdate|edgeupdate|sppsvc|RemoteRegistry|MapsBroker|tiledata" })
+if ($stopped.Count -gt 0) {
+  Add-Finding "WARN" "service" "$($stopped.Count) automatic service(s) stopped: $(($stopped | Select-Object -First 5 -ExpandProperty Name) -join ', ')"
+} else {
+  Add-Finding "OK" "service" "0 automatic services stopped"
+}
 
 # Disk space on fixed drives
 foreach ($d in Get-CimInstance Win32_LogicalDisk -Filter "DriveType=3") {
